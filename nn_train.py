@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import inspect
 from tensorflow import keras
 from tensorflow.keras import layers
 from scipy.stats.stats import pearsonr
@@ -142,8 +143,8 @@ def exec_network_serial(name, network, data, batchsize, epochs, rmsprop):
     print ('All Done')
 
 def exp_dj1():
-
-    name= 'dj1'
+    # use only the DJ change over last day
+    name=  inspect.stack()[0][3]
     epochs = 2
     nn_create_data(name, 'djasx', 'X', [1], 20190102, 10000, 20170101, 0)
     data =  NNData(name)
@@ -157,7 +158,7 @@ def exp_dj1():
 
 def exp_dj2():
 
-    name= 'dj1'
+    name=  inspect.stack()[0][3]
     epochs = 2
     nn_create_data(name, 'djasx', 'X', [3,3], 20190102, 10000, 20170101, 0)
     data =  NNData(name)
@@ -172,5 +173,54 @@ def exp_dj2():
     exec_network_serial(name, network, data , 4, epochs, 0)
 
 
+def exp_dj3():
+    # use absolute DJ over last two days (not the change) similar to dj1
+    name =  inspect.stack()[0][3]
+    epochs = 10
+    nn_create_data(name, 'djasx', 'X', [0, 0 , 2], 20190102, 10000, 20170101, 0)
+    data = NNData(name)
+    network = []
+    network.append(['Dense', 'relu', 16])
+    network.append(['Dense', 'relu', 16])
+    network.append(['Dense', '', data.nvars_o])
+    #    exec_network_serial(name, network, data , data.nvals_i, epochs, 0)
+    exec_network_serial(name, network, data, 16, epochs, 0)
 
-exp_dj1()
+def exp_dj4():
+    # use absolute DJ and ASX over last four days (not the change) similar to dj2
+    name = inspect.stack()[0][3]
+    epochs = 40
+    nn_create_data(name, 'djasx', 'X', [0, 0 , 4, 4], 20190102, 10000, 20170101, 0)
+    data = NNData(name)
+    network = []
+    network.append(['Dense', 'relu', 16])
+    network.append(['Dense', 'relu', 16])
+    network.append(['Dense', '', data.nvars_o])
+    #    exec_network_serial(name, network, data , data.nvals_i, epochs, 0)
+    exec_network_serial(name, network, data, 4, epochs, 0)
+
+
+def exp_dj5():
+    # use both DJ and ASX change last day + absolute DJ and ASX over last four days (not the change)
+    name=  inspect.stack()[0][3]
+    epochs = 500
+    nn_create_data(name, 'djasx', 'X', [1,1,4,4], 20190102, 10000, 20170101, 0)
+    data =  NNData(name)
+    # print correlations for reference
+    print ('Train      value 1 vs output: ',pearsonr(data.vali_t[:,0], data.valo_t[:, 0]))
+    print ('Validate   value 1 vs output: ',pearsonr(data.vali_v[:,0], data.valo_v[:, 0]))
+    network = []
+    network.append(['Dense','relu',16])
+    network.append(['Dense','relu',16])
+    network.append(['Dense','',data.nvars_o])
+#    exec_network_serial(name, network, data , data.nvals_i, epochs, 0)
+    exec_network_serial(name, network, data , 64, epochs, 0.00001)
+
+
+
+#exp_dj1() # use only the DJ change over last day
+#exp_dj2() # use DJ change and ASX change over past n days
+#exp_dj3() # use absolute DJ over last two days (not the change) similar to dj1
+#exp_dj4() # use absolute DJ and ASX over last four days (not the change) similar to dj2
+exp_dj5()  # use both DJ and ASX change last day + absolute DJ and ASX over last four days (not the change)
+# dj5 is sensitive to rmsprop value
