@@ -138,3 +138,4 @@ def nn_create_data(name, datatype, batches, params, date_end, daysback, date_spl
     np.save(os.path.join(dir,'vali_v.npy'),vali_v)
     np.save(os.path.join(dir,'valo_v.npy'),valo_v)
 
+

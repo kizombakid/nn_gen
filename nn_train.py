@@ -68,12 +68,22 @@ class NNData():
         self.valo_v = np.load(os.path.join(dir, 'valo_v.npy'))
 
         si = np.shape(self.vali_t)
-        self.nvars_i = si[1]
-        self.nvals_i = si[0]
+        self.nvars_i_t = si[1]
+        self.nvals_i_t = si[0]
 
         si = np.shape(self.valo_t)
-        self.nvars_o = si[1]
-        self.nvals_o = si[1]
+        self.nvars_o_t = si[1]
+        self.nvals_o_t = si[1]
+
+        si = np.shape(self.vali_v)
+        self.nvars_i_v = si[1]
+        self.nvals_i_v = si[0]
+
+        si = np.shape(self.valo_v)
+        self.nvars_o_v = si[1]
+        self.nvals_o_v = si[1]
+
+
 
 def exec_network_serial(name, network, data, batchsize, epochs, rmsprop):
 
@@ -83,7 +93,7 @@ def exec_network_serial(name, network, data, batchsize, epochs, rmsprop):
         net = network[n]
         print (net)
         if n == 0:
-            if net[0] == 'Dense' : model.add(layers.Dense(net[2],activation=net[1],input_shape=(data.nvars_i,)))
+            if net[0] == 'Dense' : model.add(layers.Dense(net[2],activation=net[1],input_shape=(data.nvars_i_t,)))
         elif n==len(network)-1:
             if net[0] == 'Dense': model.add(layers.Dense(net[2]))
         else:
@@ -142,6 +152,16 @@ def exec_network_serial(name, network, data, batchsize, epochs, rmsprop):
 
     print ('All Done')
 
+
+def nn_generator(data,lookback,shuffle=False,batch_size=128):
+
+    while 1:
+        if shuffle:
+            rows = np.random.randint(lookback,data.nvals_t)
+
+
+
+
 def exp_dj1():
     # use only the DJ change over last day
     name=  inspect.stack()[0][3]
@@ -153,7 +173,7 @@ def exp_dj1():
     print ('Validate   value 1 vs output: ',pearsonr(data.vali_v[:,0], data.valo_v[:, 0]))
     network = []
     network.append(['Dense','relu',2])
-    network.append(['Dense','',data.nvars_o])
+    network.append(['Dense','',data.nvars_o_t])
     exec_network_serial(name, network, data , 1, epochs, 0)
 
 def exp_dj2():
@@ -168,7 +188,7 @@ def exp_dj2():
     network = []
     network.append(['Dense','relu',12])
     network.append(['Dense','relu',12])
-    network.append(['Dense','',data.nvars_o])
+    network.append(['Dense','',data.nvars_o_t])
 #    exec_network_serial(name, network, data , data.nvals_i, epochs, 0)
     exec_network_serial(name, network, data , 4, epochs, 0)
 
@@ -182,7 +202,7 @@ def exp_dj3():
     network = []
     network.append(['Dense', 'relu', 16])
     network.append(['Dense', 'relu', 16])
-    network.append(['Dense', '', data.nvars_o])
+    network.append(['Dense', '', data.nvars_o_t])
     #    exec_network_serial(name, network, data , data.nvals_i, epochs, 0)
     exec_network_serial(name, network, data, 16, epochs, 0)
 
@@ -195,7 +215,7 @@ def exp_dj4():
     network = []
     network.append(['Dense', 'relu', 16])
     network.append(['Dense', 'relu', 16])
-    network.append(['Dense', '', data.nvars_o])
+    network.append(['Dense', '', data.nvars_o_t])
     #    exec_network_serial(name, network, data , data.nvals_i, epochs, 0)
     exec_network_serial(name, network, data, 4, epochs, 0)
 
@@ -212,9 +232,19 @@ def exp_dj5():
     network = []
     network.append(['Dense','relu',16])
     network.append(['Dense','relu',16])
-    network.append(['Dense','',data.nvars_o])
+    network.append(['Dense','',data.nvars_o_t])
 #    exec_network_serial(name, network, data , data.nvals_i, epochs, 0)
     exec_network_serial(name, network, data , 64, epochs, 0.00001)
+
+
+def exp_rn1():
+    # use both DJ and ASX change last day + absolute DJ and ASX over last four days (not the change)
+    name=  inspect.stack()[0][3]
+    epochs = 500
+    nn_create_data(name, 'djasx', 'X', [1,1,1,1], 20190102, 10000, 20170101, 0)
+    data =  NNData(name)
+    print (data.nvals_i)
+
 
 
 
@@ -222,5 +252,8 @@ def exp_dj5():
 #exp_dj2() # use DJ change and ASX change over past n days
 #exp_dj3() # use absolute DJ over last two days (not the change) similar to dj1
 #exp_dj4() # use absolute DJ and ASX over last four days (not the change) similar to dj2
-exp_dj5()  # use both DJ and ASX change last day + absolute DJ and ASX over last four days (not the change)
+#exp_dj5()  # use both DJ and ASX change last day + absolute DJ and ASX over last four days (not the change)
 # dj5 is sensitive to rmsprop value
+
+exp_dj1()
+#exp_rn1()
