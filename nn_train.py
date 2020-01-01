@@ -240,9 +240,11 @@ def exec_network_generator(name, network, data, lookback, batchsize, epochs, rms
             if net[0] == 'Dense' : model.add(layers.Dense(net[2],activation=net[1],input_shape=(data.nvars_i_t,)))
             if net[0] == 'Flatten': model.add(layers.Flatten(input_shape=(lookback,data.nvars_i_t)))
             if net[0] == 'LSTM': model.add(layers.LSTM(net[1], input_shape=(None, data.nvars_i_t)))
+            if net[0] == 'GRU': model.add(layers.GRU(net[1], input_shape=(None, data.nvars_i_t)))
         elif n==len(network)-1:
             if net[0] == 'Dense': model.add(layers.Dense(net[2], activation=net[1]))
             if net[0] == 'LSTM': model.add(layers.LSTM(net[2], activation=net[1]))
+            if net[0] == 'GRU': model.add(layers.GRU(net[2], activation=net[1]))
             if net[0] == 'MaxPooling1D': model.add(layers.MaxPooling1D(pool_size=net[1], strides=net[2]))
             if net[0] == 'Dropout' : model.add(layers.Dropout(net[1]))
             if net[0] == 'TimeDistributed' and net[1] == 'Dense': model.add(layers.TimeDistributed(layers.Dense(net[3], activation=net[2])))
@@ -250,6 +252,8 @@ def exec_network_generator(name, network, data, lookback, batchsize, epochs, rms
             if net[0] == 'Dense' : model.add(layers.Dense(net[2],activation=net[1]))
             if net[0] == 'Dropout' : model.add(layers.Dropout(net[1]))
             if net[0] == 'TimeDistributed' and net[1] == 'Dense': model.add(layers.TimeDistributed(layers.Dense(net[3], activation=net[2])))
+            if net[0] == 'LSTM': model.add(layers.LSTM(net[2], activation=net[1]))
+            if net[0] == 'GRU': model.add(layers.GRU(net[2], activation=net[1]))
         print(model.output_shape)
 
     if rmsprop>0 :
@@ -476,7 +480,7 @@ def exp_cat3():
     name = inspect.stack()[0][3]
     nn_create_data(name, 'djasx', 'X', [1,1], 20190102, 10000, 20170101, 0)
     hidden_size = 150
-    epochs = 20
+    epochs = 5
     lookback = 60
     batchsize = 16
     rmsprop = 0
