@@ -258,9 +258,9 @@ def nn_generator(datai, datao, lookback, shuffle=False, batch_size=128):
         targets = np.zeros((len(rows),nvars_o))
 
         for j, row in enumerate(rows):
-            indices = range(rows[j]-lookback,rows[j])
-            samples[j] = datai[indices]
-            targets[j] = datao[j]
+            for k in range(0,lookback):
+                samples[j,k,:] = datai[row-k,:]
+            targets[j] = datao[row]
 
         yield samples, targets
 
