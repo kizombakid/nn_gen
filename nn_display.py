@@ -98,8 +98,9 @@ class DispTS(QMainWindow):
         self.w.show()
 
 
-name = 'dj1'
+name = 'exp_rn2'
 data = NNData(name)
+
 nn = NNModel(data,name)
 
 print (len(data.vali_t),len(data.vali_v))
@@ -109,7 +110,6 @@ print ('Train     predict vs output  ',pearsonr(nn.predict_t,data.valo_t[:,0]))
 print (' ')
 print ('Validate  input vs output    ',pearsonr(data.vali_v[:,0],data.valo_v[:,0]))
 print ('Validate  predict vs output  ',pearsonr(nn.predict_v,data.valo_v[:,0]))
-
 
 app = QtGui.QApplication([])
 
