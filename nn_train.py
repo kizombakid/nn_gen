@@ -282,7 +282,7 @@ def exp_rn1():
     data = NNData(name)
 
     lookback=3
-    batch_size=4
+    batch_size=64
     train_gen = nn_generator(data.vali_t, data.valo_t, lookback, shuffle=True, batch_size=batch_size)
     val_gen = nn_generator(data.vali_v, data.valo_v, lookback, shuffle=False, batch_size=batch_size)
     train_gen2 = nn_generator(data.vali_t, data.valo_t, lookback, shuffle=False, batch_size=batch_size)
@@ -292,6 +292,79 @@ def exp_rn1():
     model.add(layers.Flatten(input_shape=(lookback,data.nvars_i_t)))
     model.add(layers.Dense(12, activation = 'relu'))
     model.add(layers.Dense(12, activation = 'relu'))
+    model.add(layers.Dense(data.nvars_o_t))
+
+    model.compile(optimizer = RMSprop(),
+           loss = 'mean_squared_error',
+            metrics = ['mean_absolute_error', 'mean_squared_error'])
+
+    val_steps = (data.nvals_i_v-lookback)//batch_size
+    train_steps = (data.nvals_i_t-lookback)//batch_size
+
+    history = model.fit_generator(train_gen, steps_per_epoch=train_steps,  epochs=20,  \
+                                  validation_data = val_gen, \
+                                  validation_steps = val_steps)
+                                  #callbacks=[PrintDot()])
+
+    # Need work out what validation_steps should be -
+
+    predict_t = model.predict_generator(train_gen2,steps=train_steps).flatten()
+    predict_v = model.predict_generator(val_gen2,steps=val_steps).flatten()
+
+    print (len(predict_t),len(data.valo_t))
+    print (len(predict_v),len(data.valo_v))
+
+    print (' ')
+    print ('Train     predict vs output  ', pearsonr(predict_t, data.valo_t[lookback:lookback+len(predict_t), 0]))
+    print ('Validate  predict vs output  ', pearsonr(predict_v, data.valo_v[lookback:lookback+len(predict_v), 0]))
+    print (' ')
+
+    # save nn output
+    dir = '/Users/oalves/python/nn/exps/' + name
+    jsonfile = os.path.join(dir, "model.json")
+    h5file = os.path.join(dir, "model.h5")
+    histfile = os.path.join(dir, "history.npy")
+    model_json = model.to_json()
+    with open(jsonfile, "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights(h5file)
+    print("Saved model to disk")
+    history_dict = history.history
+    # Save it under the form of a json file
+    np.save(histfile, history_dict)
+
+    model.summary()
+    nn_display_stats(model, history, data.vali_t, data.valo_t)
+
+    print('All Done')
+
+def exp_rn2():
+
+
+    class PrintDot(keras.callbacks.Callback):
+        def on_epoch_end(self, epoch, logs):
+            if epoch % 100 == 0:
+                print('')
+                print(str(epoch), end='')
+            print('.', end='')
+
+
+
+    # use both DJ and ASX change last day + absolute DJ and ASX over last four days (not the change)
+    name=  inspect.stack()[0][3]
+    nn_create_data(name, 'djasx', 'X', [1,1], 20190102, 10000, 20170101, 0)
+    data = NNData(name)
+
+    lookback=3
+    batch_size=16
+    train_gen = nn_generator(data.vali_t, data.valo_t, lookback, shuffle=True, batch_size=batch_size)
+    val_gen = nn_generator(data.vali_v, data.valo_v, lookback, shuffle=False, batch_size=batch_size)
+    train_gen2 = nn_generator(data.vali_t, data.valo_t, lookback, shuffle=False, batch_size=batch_size)
+    val_gen2 = nn_generator(data.vali_v, data.valo_v, lookback, shuffle=False, batch_size=batch_size)
+
+    model = keras.Sequential()
+    model.add(layers.LSTM(32,input_shape=(None,data.nvars_i_t)))
     model.add(layers.Dense(data.nvars_o_t))
 
     model.compile(optimizer = RMSprop(),
@@ -339,6 +412,10 @@ def exp_rn1():
 
     print('All Done')
 
+
+
+
+
  #exp_dj1() # use only the DJ change over last day
 #exp_dj2() # use DJ change and ASX change over past n days
 #exp_dj3() # use absolute DJ over last two days (not the change) similar to dj1
@@ -347,5 +424,6 @@ def exp_rn1():
 # dj5 is sensitive to rmsprop value
 
 # These two should produce the same results - one is direct form, the second one uses a generator
-#exp_dj2()
-exp_rn1()
+exp_dj2()
+#exp_rn1()
+#exp_rn2()
