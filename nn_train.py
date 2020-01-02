@@ -87,7 +87,7 @@ class NNData(object):
 
         si = np.shape(self.valo_t)
         self.nvars_o_t = si[1]
-        self.nvals_o_t = si[1]
+        self.nvals_o_t = si[0]
 
         si = np.shape(self.vali_v)
         self.nvars_i_v = si[1]
@@ -95,7 +95,7 @@ class NNData(object):
 
         si = np.shape(self.valo_v)
         self.nvars_o_v = si[1]
-        self.nvals_o_v = si[1]
+        self.nvals_o_v = si[0]
 
 
 class GenNNData(NNData):
