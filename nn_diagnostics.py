@@ -18,6 +18,7 @@ from tensorflow.keras.models import model_from_json
 import ast
 import matplotlib._color_data as mcd
 import seaborn as sns
+import numpy as np
 
 
 import os
@@ -260,6 +261,10 @@ class NN_Diagnostics():
         predict_v_ave = predict_v_ave/float(self.ndef.n_ensembles)
         predict_i_ave = predict_i_ave/float(self.ndef.n_ensembles)
 
+        dir = self.ndef.basedir+'/'+self.ndef.exp+ '/' + self.ndef.set
+        np.save(dir+'/predict_t_ave_'+type+'.npy',predict_t_ave)
+        np.save(dir+'/predict_v_ave_'+type+'.npy',predict_v_ave)
+        np.save(dir+'/predict_i_ave_'+type+'.npy',predict_i_ave)
         # Plot for ensemble average
         fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(12, 12))
 
@@ -310,6 +315,12 @@ class NN_Diagnostics():
         predict_t_ave = predict_t_ave/float(nens_cor)
         predict_v_ave = predict_v_ave/float(nens_cor)
         predict_i_ave = predict_i_ave/float(nens_cor)
+
+        dir = self.ndef.basedir+'/'+self.ndef.exp+ '/' + self.ndef.set
+        np.save(dir+'/predict_t_bcor_'+type+'.npy',predict_t_ave)
+        np.save(dir+'/predict_v_bcor_'+type+'.npy',predict_v_ave)
+        np.save(dir+'/predict_i_bcor_'+type+'.npy',predict_i_ave)
+
 
         fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(15, 15))
 
@@ -451,5 +462,73 @@ class NN_Diagnostics():
         ax3.plot([0.0,0.0],[ymin,ymax])
 
         fig.savefig(self.ndef.basedir+'/'+self.ndef.exp+ '/' + self.ndef.set+'/scat_all_'+type+'.png')
+        fig.clear()
+        plt.close('all')
+
+
+    def plot_scatter_max(self,type='best'):
+
+        fig, ((ax1, ax2), (ax3,ax4)) = plt.subplots(2, 2, figsize=(18,18))
+
+        ymin = 9999
+        ymax = -99999
+        for ens in range(0,self.ndef.n_ensembles):
+
+            home = str(Path.home())
+            dir = self.ndef.basedir+'/'+self.ndef.exp+ '/' + self.ndef.set + '/en'+str(ens)
+            predict_t = np.load(dir+'/predict_t_'+type+'.npy')
+            if ens == 0:
+                vmax = predict_t
+            else:
+                for i in range(0,len(predict_t)):
+                    vmax[i]=max([vmax[i],predict_t[i]])
+        ax1.scatter(self.data_t.valo.flatten(),vmax)
+        dir = self.ndef.basedir+'/'+self.ndef.exp+ '/' + self.ndef.set
+        np.save(dir+'/'+'predict_t_vmax_'+type+'.npy',vmax)
+        ymin = min(vmax)
+        ymax = max(vmax)
+        ax1.plot([0.0,0.0],[ymin,ymax])
+
+        ymin = 9999
+        ymax = -99999
+        for ens in range(0,self.ndef.n_ensembles):
+
+            home = str(Path.home())
+            dir = self.ndef.basedir+'/'+self.ndef.exp+ '/' + self.ndef.set + '/en'+str(ens)
+            predict_v = np.load(dir+'/predict_v_'+type+'.npy')
+            if ens == 0:
+                vmax = predict_v
+            else:
+                for i in range(0,len(predict_v)):
+                    vmax[i]=max([vmax[i],predict_v[i]])
+
+        ax2.scatter(self.data_v.valo.flatten(),vmax)
+        dir = self.ndef.basedir+'/'+self.ndef.exp+ '/' + self.ndef.set
+        np.save(dir+'/'+'predict_v_vmax_'+type+'.npy',vmax)
+        ymin = min(vmax)
+        ymax = max(vmax)
+        ax2.plot([0.0,0.0],[ymin,ymax])
+
+        ymin = 9999
+        ymax = -99999
+        for ens in range(0,self.ndef.n_ensembles):
+
+            home = str(Path.home())
+            dir = self.ndef.basedir+'/'+self.ndef.exp+ '/' + self.ndef.set + '/en'+str(ens)
+            predict_i = np.load(dir+'/predict_i_'+type+'.npy')
+            if ens == 0:
+                vmax = predict_i
+            else:
+                for i in range(0,len(predict_i)):
+                    vmax[i]=max([vmax[i],predict_i[i]])
+
+        ax3.scatter(self.data_i.valo.flatten(),vmax)
+        dir = self.ndef.basedir+'/'+self.ndef.exp+ '/' + self.ndef.set
+        np.save(dir+'/'+'predict_i_vmax_'+type+'.npy',vmax)
+        ymin = min(vmax)
+        ymax = max(vmax)
+        ax3.plot([0.0,0.0],[ymin,ymax])
+
+        fig.savefig(self.ndef.basedir+'/'+self.ndef.exp+ '/' + self.ndef.set+'/scat_max_'+type+'.png')
         fig.clear()
         plt.close('all')

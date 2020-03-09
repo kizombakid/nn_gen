@@ -32,9 +32,9 @@ for set in ndef.sets:
     print ('****** ',ndef.codesA)
 
 
-    for n in range(0,ndef.n_ensembles):
+    #for n in range(0,ndef.n_ensembles):
 
-        nn_main(n,ndef,update_data=False,run_nn=True)
+        #nn_main(n,ndef,update_data=False,run_nn=True)
 
     xx = NN_Diagnostics(ndef)
     xx.summary()
