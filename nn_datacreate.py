@@ -20,6 +20,9 @@ class NN_DataCreate():
                 vali_t = self.vali_t
                 vali_v = self.vali_v
                 vali_i = self.vali_i
+                dates_t = self.dates_t
+                dates_v = self.dates_v
+                dates_i = self.dates_i
                 if varso != None:
                     valo_t = self.valo_t
                     valo_v = self.valo_v
@@ -28,6 +31,10 @@ class NN_DataCreate():
                 vali_t = np.append(vali_t, self.vali_t, axis=0)
                 vali_v = np.append(vali_v, self.vali_v, axis=0)
                 vali_i = np.append(vali_i, self.vali_v, axis=0)
+                dates_t = np.apped(dates_t, self,dates_t, axis=0)
+                dates_v = np.apped(dates_v, self,dates_v, axis=0)
+                dates_i = np.apped(dates_i, self,dates_i, axis=0)
+
                 if varso != None :
                     valo_t = np.append(valo_t, self.valo_t, axis=0)
                     valo_v = np.append(valo_v, self.valo_v, axis=0)
@@ -39,6 +46,11 @@ class NN_DataCreate():
         np.save(os.path.join(dir, 'data'+dname_out+'_vali_t.npy'), np.float32(vali_t))
         np.save(os.path.join(dir, 'data'+dname_out+'_vali_v.npy'), np.float32(vali_v))
         np.save(os.path.join(dir, 'data'+dname_out+'_vali_i.npy'), np.float32(vali_i))
+
+        np.save(os.path.join(dir, 'data'+dname_out+'_dates_t.npy'), dates_t)
+        np.save(os.path.join(dir, 'data'+dname_out+'_dates_v.npy'), dates_v)
+        np.save(os.path.join(dir, 'data'+dname_out+'_dates_i.npy'), dates_i)
+
 
         if varso != None:
             np.save(os.path.join(dir, 'data_valo_t.npy'), np.float32(valo_t))
@@ -55,6 +67,8 @@ class NN_DataCreate():
         dates = np.load(os.path.join(dir, code + '_dates.npy'))
         if dates[0] > dates_train[0]: ipt1 = 0
         if dates[-1] < dates_ind[1]: ipi2 = len(dates)-1
+        print ('dates ',dates[0],dates[-1])
+        print (dates_train)
         for n in range(1,len(dates)):
             if dates[n] >= dates_train[0] and dates[n-1] < dates_train[0]: ipt1 = n
             if dates[n] >= dates_train[1] and dates[n-1] < dates_train[1]: ipt2 = n
@@ -72,6 +86,9 @@ class NN_DataCreate():
         self.vali_t = val[ipt1:ipt2, :, :]
         self.vali_v = val[ipv1:ipv2, :, :]
         self.vali_i = val[ipi1:ipi2, :, :]
+        self.dates_t = dates[ipt1:ipt2]
+        self.dates_v = dates[ipv1:ipv2]
+        self.dates_i = dates[ipi1:ipi2]
 
         if varso != None:
             for nn,var in enumerate(varso):
@@ -83,6 +100,7 @@ class NN_DataCreate():
             self.valo_t = val[ipt1:ipt2, :]
             self.valo_v = val[ipv1:ipv2, :]
             self.valo_i = val[ipi1:ipi2, :]
+
 
 
 # Test
