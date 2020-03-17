@@ -29,6 +29,7 @@ from pathlib import Path
 from nn_tools import *
 from nn_datacreate import *
 from nn_datagen import *
+from NNDCube import *
 
 
 class NN_Network():
@@ -120,7 +121,7 @@ class NN_Network():
         self.history = self.model.fit_generator(self.data_t.gen, steps_per_epoch=self.train_steps, epochs=self.ndef.epochs,
                                   validation_data = self.data_v.gen,
                                   validation_steps = self.val_steps,
-                                  callbacks=[es,mc], verbose=1)
+                                  callbacks=[es,mc], verbose=0)
 #                                  callbacks=[es,mc,tensorboard_cb])
                                   #callbacks=[PrintDot()])
         if save: self.save(ename=ename)
@@ -175,10 +176,18 @@ class NN_Network():
 def nn_main(ensemble,ndef, update_data=False, run_nn=True):
 
     if ensemble==0 or update_data == True:
-        dataA = NN_DataCreate(ndef.dnameA, 'A', ndef, ndef.varsiA, ndef.lookbackA, ndef.codesA, varso=ndef.varso)
-        if ndef.n_nets == 2: dataB = NN_DataCreate(ndef.dnameB, 'B', ndef, ndef.varsiB, ndef.lookbackB, ndef.codesB)
-        if ndef.n_nets == 3: dataC = NN_DataCreate(ndef.dnameC, 'C', ndef, ndef.varsiC, ndef.lookbackC, ndef.codesC)
-        
+        xx = NNDCube(ndef.set, ndef.dates_train, ndef.lookbackA, 't', 'A', ndef.varsiA, ndef.varso, ndef.exp)
+        xx = NNDCube(ndef.set, ndef.dates_val, ndef.lookbackA, 'v', 'A', ndef.varsiA, ndef.varso, ndef.exp)
+        xx = NNDCube(ndef.set, ndef.dates_ind, ndef.lookbackA, 'i', 'A', ndef.varsiA, ndef.varso, ndef.exp)
+        if ndef.n_nets == 2: 
+            xx = NNDCube(ndef.set, ndef.dates_train, ndef.lookbackB, 't', 'B', ndef.varsiB, None, ndef.exp)
+            xx = NNDCube(ndef.set, ndef.dates_val, ndef.lookbackB, 'v', 'B', ndef.varsiB, None, ndef.exp)
+            xx = NNDCube(ndef.set, ndef.dates_ind, ndef.lookbackB, 'i', 'B', ndef.varsiB, None, ndef.exp)
+        if ndef.n_nets == 3: 
+            xx = NNDCube(ndef.set, ndef.dates_train, ndef.lookbackC, 't', 'C', ndef.varsiB, None, ndef.exp)
+            xx = NNDCube(ndef.set, ndef.dates_val, ndef.lookbackC, 'v', 'C', ndef.varsiB, None, ndef.exp)
+            xx = NNDCube(ndef.set, ndef.dates_ind, ndef.lookbackC, 'i', 'C', ndef.varsiB, None, ndef.exp)
+ 
     if run_nn:
         data_gen_t = NN_DataGen(ndef, 't', shuffle = True, batchsize=ndef.batchsize)
         data_gen_v = NN_DataGen(ndef, 'v', shuffle = False, batchsize=ndef.batchsize)
