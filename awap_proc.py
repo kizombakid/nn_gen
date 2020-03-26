@@ -21,12 +21,14 @@ def find_nearest_gridpoint(lat,lon,location):
     jpos = (np.abs(lat-location[0])).argmin()
     return ipos,jpos
 
-lname = 'penrith_m5'
+lname = 'penrith'
 location = [-33.75, 150.69]
+
+print ('Running for ',lname)
 
 var = sys.argv[1]
 year1 = 1911
-year2 = 2018
+year2 = 2019
 
 date = []
 vph = []
@@ -38,7 +40,14 @@ vpl_w = []
 
 
 for year in range(year1,year2+1):
-    ncfile = Dataset('/data/awap/'+var+'_'+str(year)+'.nc',"r",format="NETCDF4")
+
+
+    print('/g/data/rr8/OBS/AWAP_ongoing/v0.3/grid_05/daily/'+var+'/'+var+'_mean_0.05_'+str(year)+'.nc')
+
+    ncfile = Dataset('/g/data/rr8/OBS/AWAP_ongoing/v0.3/grid_05/daily/'+var+'/'+var+'_mean_0.05_'+str(year)+'.nc',"r",format="NETCDF4")
+
+
+
     time = ncfile.variables['time'][:]
     lat = ncfile.variables['lat'][:]
     lon = ncfile.variables['lon'][:]
@@ -65,24 +74,21 @@ for year in range(year1,year2+1):
 
         date.append(int(dts))
 
-        if it==0:
-            mn=np.mean(val[it,jpos-5:jpos+6, ipos-5:ipos+6])
-            print (mn,val[it,jpos,ipos-5])
-
-        vph.append(val[it,jpos,ipos-5])
+        vph.append(val[it,jpos,ipos])
         vpl_c.append(np.mean(val[it,jpos-5:jpos+6, ipos-5:ipos+6]))
         vpl_n.append(np.mean(val[it,jpos-5+10:jpos+6+10, ipos-5:ipos+6]))
         vpl_s.append(np.mean(val[it,jpos-5-10:jpos+6-10, ipos-5:ipos+6]))
         vpl_e.append(np.mean(val[it,jpos-5:jpos+6, ipos-5+10:ipos+6+10]))
         vpl_w.append(np.mean(val[it,jpos-5:jpos+6, ipos-5-10:ipos+6-10]))
 
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_date.npy',date)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_vph.npy',vph)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_vpl_c.npy',vpl_c)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_vpl_n.npy',vpl_n)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_vpl_s.npy',vpl_s)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_vpl_e.npy',vpl_e)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_vpl_w.npy',vpl_w)
+sdir = '/g/data/dx2/osa548/awap_series'
+np.save(sdir+'/'+lname+'_'+var+'_date.npy',date)
+np.save(sdir+'/'+lname+'_'+var+'_vph.npy',vph)
+np.save(sdir+'/'+lname+'_'+var+'_vpl_c.npy',vpl_c)
+np.save(sdir+'/'+lname+'_'+var+'_vpl_n.npy',vpl_n)
+np.save(sdir+'/'+lname+'_'+var+'_vpl_s.npy',vpl_s)
+np.save(sdir+'/'+lname+'_'+var+'_vpl_e.npy',vpl_e)
+np.save(sdir+'/'+lname+'_'+var+'_vpl_w.npy',vpl_w)
 
 # alse create anomalies relative to whole period
 def create_anom(value):
@@ -108,19 +114,19 @@ apl_s = create_anom(vpl_s)
 apl_e = create_anom(vpl_e)
 apl_w = create_anom(vpl_w)
 
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_aph.npy',aph)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_apl_c.npy',apl_c)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_apl_n.npy',apl_n)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_apl_s.npy',apl_s)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_apl_e.npy',apl_e)
-np.save('/home/oscar/analyse/data/awap_series/'+lname+'_'+var+'_apl_w.npy',apl_w)
+np.save(sdir+'/'+lname+'_'+var+'_aph.npy',aph)
+np.save(sdir+'/'+lname+'_'+var+'_apl_c.npy',apl_c)
+np.save(sdir+'/'+lname+'_'+var+'_apl_n.npy',apl_n)
+np.save(sdir+'/'+lname+'_'+var+'_apl_s.npy',apl_s)
+np.save(sdir+'/'+lname+'_'+var+'_apl_e.npy',apl_e)
+np.save(sdir+'/'+lname+'_'+var+'_apl_w.npy',apl_w)
 
-plt.figure()
-plt.plot(vph[0:365*3])
-plt.show()
-plt.figure()
-plt.plot(aph[0:365*3])
-plt.show()
+#plt.figure()
+#plt.plot(vph[0:365*3])
+#plt.show()
+#plt.figure()
+#plt.plot(aph[0:365*3])
+#plt.show()
 
 '''
 #Checker for nyears=9
