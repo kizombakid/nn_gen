@@ -10,7 +10,7 @@ class NN_Def():
 
         home = str(Path.home())
         if basedir == "":
-            dir = home + '/analyse/nn_exps/'
+            dir = home + '/analyse/exps'
         else:
             dir = basedir
 
