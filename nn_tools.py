@@ -1,4 +1,5 @@
 
+
 from pathlib import Path
 
 
@@ -41,6 +42,5 @@ class NN_Def():
         self.rmsprop = 0
         self.patience = 1
         self.optimizer = 'rmsprop'
-
 
 
